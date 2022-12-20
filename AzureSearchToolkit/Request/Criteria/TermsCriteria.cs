@@ -70,7 +70,7 @@ namespace AzureSearchToolkit.Request.Criteria
                     notOperator = true;
                 }
 
-                if (Values.Count > 1 && !TypeHelper.IsPropertyNonStringEnumerable(TypeHelper.GetReturnType(Member)))
+                if (!TypeHelper.IsPropertyNonStringEnumerable(TypeHelper.GetReturnType(Member)))
                 {
                     return $"search.in({Field}, '{string.Join("|", Values)}', '|')";
                 }
