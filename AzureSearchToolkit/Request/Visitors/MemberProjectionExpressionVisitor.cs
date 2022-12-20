@@ -51,7 +51,7 @@ namespace AzureSearchToolkit.Request.Visitors
         {
             var member = base.VisitAzureSearchField(m);
 
-            fieldNames.Add(m.Member.Name.ToLowerInvariant());
+            fieldNames.Add(Mapping.GetFieldName(m.Member.DeclaringType, m));
 
             return member;
         }
