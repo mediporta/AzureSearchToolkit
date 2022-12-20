@@ -15,6 +15,6 @@ jobs:
       - name: Build solution
         run: dotnet build --configuration Release --no-restore
       - name: Publish package
-        run: dotnet nuget push <my project>/bin/Release/*.nupkg
+        run: dotnet nuget push AzureSearchToolkit/bin/Release/*.nupkg
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
