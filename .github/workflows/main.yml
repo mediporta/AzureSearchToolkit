@@ -15,9 +15,9 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dependencies
+      - name: Restore dependencies
         run: dotnet restore
-      - name: Build
+      - name: Build solution
         run: dotnet build --configuration Release --no-restore
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal
+      #- name: Run tests
+      #  run: dotnet test --no-restore --verbosity normal
