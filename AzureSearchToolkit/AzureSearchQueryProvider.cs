@@ -87,13 +87,7 @@ namespace AzureSearchToolkit
         /// <inheritdoc/>
         public object Execute(Expression expression)
         {
-            return AsyncHelper.RunSync(() => ExecuteAsync<object>(expression));
-        }
-
-        /// <inheritdoc/>
-        public async Task<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default(CancellationToken)) where TResult: class
-        {
-            return (TResult)await ExecuteAsync(expression, cancellationToken);
+            return AsyncHelper.RunSync(() => ExecuteAsync(expression));
         }
 
         /// <inheritdoc/>
@@ -102,11 +96,11 @@ namespace AzureSearchToolkit
             Argument.EnsureNotNull(nameof(expression), expression);
 
             var translation = AzureSearchQueryTranslator.Translate(Mapping, expression);
-            Mapping.AlterSearchParameters(translation.SearchRequest.SearchParameters);
 
             try
             {
                 var formatter = new SearchRequestFormatter(Mapping, translation.SearchRequest);
+                Mapping.AlterSearchParameters(formatter.SearchRequest.SearchParameters);
 
                 var response = await Connection.SearchAsync(formatter.SearchRequest.SearchParameters,
                     SearchType, translation.SearchRequest.SearchText, Logger);
@@ -119,6 +113,21 @@ namespace AzureSearchToolkit
 
                 return null;
             }
+        }
+
+        public async Task<IEnumerable<TResult>> ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default(CancellationToken)) where TResult : class
+        {
+            Argument.EnsureNotNull(nameof(expression), expression);
+
+            var translation = AzureSearchQueryTranslator.Translate(Mapping, expression);
+            var formatter = new SearchRequestFormatter(Mapping, translation.SearchRequest);
+            Mapping.AlterSearchParameters(formatter.SearchRequest.SearchParameters);
+
+            var response = await Connection.SearchAsync<TResult>(
+                formatter.SearchRequest.SearchParameters,
+                translation.SearchRequest.SearchText);
+
+            return response.Results.Select(r => r.Document);
         }
     }
 }

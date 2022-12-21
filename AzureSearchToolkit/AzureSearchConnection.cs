@@ -288,6 +288,14 @@ namespace AzureSearchToolkit
             return null;
         }
 
+        public async Task<DocumentSearchResult<TResult>> SearchAsync<TResult>(SearchParameters searchParameters,
+            string searchText = null, ILogger logger = null)
+        {
+            var searchIndex = GetIndex(typeof(TResult));
+            var indexClient = SearchClient.Value.Indexes.GetClient(searchIndex);
+            return await indexClient.Documents.SearchAsync<TResult>(searchText, searchParameters);
+        }
+
         private string GetIndex<T>() where T : class
         {
             return GetIndex(typeof(T));

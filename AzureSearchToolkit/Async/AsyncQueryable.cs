@@ -169,9 +169,9 @@ namespace AzureSearchToolkit.Async
         /// <param name="source">A sequence of values to create a list from.</param>
         /// <param name="cancellationToken">The optional <see cref="T:System.Threading.CancellationToken"/> which can be used to cancel this task.</param>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-        public static async Task<List<TSource>> ToListAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task<List<TSource>> ToListAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default(CancellationToken)) where TSource : class
         {
-            return ((IEnumerable<TSource>)await ExecuteAsync(source.Provider, source.Expression, cancellationToken)).ToList();
+            return (await ExecuteAsync<TSource>(source.Provider, source.Expression, cancellationToken)).ToList();
         }
 
         /// <summary>
@@ -183,9 +183,9 @@ namespace AzureSearchToolkit.Async
         /// <param name="source">A sequence of values to create an array from.</param>
         /// <param name="cancellationToken">The optional <see cref="T:System.Threading.CancellationToken"/> which can be used to cancel this task.</param>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-        public static async Task<TSource[]> ToArrayAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task<TSource[]> ToArrayAsync<TSource>(this IQueryable<TSource> source, CancellationToken cancellationToken = default(CancellationToken)) where TSource : class
         {
-            return ((IEnumerable<TSource>)await ExecuteAsync(source.Provider, source.Expression, cancellationToken)).ToArray();
+            return (await ExecuteAsync<TSource>(source.Provider, source.Expression, cancellationToken)).ToArray();
         }
         /*
         /// <summary>
@@ -282,6 +282,11 @@ namespace AzureSearchToolkit.Async
         static Task<object> ExecuteAsync(IQueryProvider provider, Expression expression, CancellationToken cancellationToken)
         {
             return ((IAsyncQueryExecutor)provider).ExecuteAsync(expression, cancellationToken);
+        }
+
+        static Task<IEnumerable<TResult>> ExecuteAsync<TResult>(IQueryProvider provider, Expression expression, CancellationToken cancellationToken) where TResult : class
+        {
+            return ((IAsyncQueryExecutor)provider).ExecuteAsync<TResult>(expression, cancellationToken);
         }
     }
 }

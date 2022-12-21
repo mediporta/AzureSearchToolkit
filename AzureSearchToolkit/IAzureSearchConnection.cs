@@ -41,5 +41,8 @@ namespace AzureSearchToolkit
         /// <returns>An AzureOperationResponse object containing the desired search results.</returns>
         Task<AzureOperationResponse<DocumentSearchResult<Document>>> SearchAsync(SearchParameters searchParameters, Type searchType, 
             string searchText = null, ILogger logger = null);
+
+        Task<DocumentSearchResult<TResult>> SearchAsync<TResult>(SearchParameters searchParameters,
+            string searchText = null, ILogger logger = null);
     }
 }
