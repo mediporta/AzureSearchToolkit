@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>Mediporta.AzureSearchToolkit</PackageId>
-        <Version>1.0.2</Version>
+        <Version>1.1.0</Version>
         <Authors>Niko Kovačič</Authors>
         <Description>AzureSearchToolkit is a lightweight set of tools for Azure Search to quickly build search functionalities for .NET Standard web apps.
 

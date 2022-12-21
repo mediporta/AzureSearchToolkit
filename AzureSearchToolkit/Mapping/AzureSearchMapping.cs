@@ -85,6 +85,10 @@ namespace AzureSearchToolkit.Mapping
             return null;
         }
 
+        public void AlterSearchParameters(SearchParameters searchParameters)
+        {
+        }
+
         public object Materialize(Document sourceDocument, Type sourceType)
         {
             return JObject.FromObject(sourceDocument, jsonSerializer).ToObject(sourceType, jsonSerializer);

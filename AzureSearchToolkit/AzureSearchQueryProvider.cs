@@ -102,6 +102,7 @@ namespace AzureSearchToolkit
             Argument.EnsureNotNull(nameof(expression), expression);
 
             var translation = AzureSearchQueryTranslator.Translate(Mapping, expression);
+            Mapping.AlterSearchParameters(translation.SearchRequest.SearchParameters);
 
             try
             {
