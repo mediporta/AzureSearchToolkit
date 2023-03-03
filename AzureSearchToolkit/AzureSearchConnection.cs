@@ -1,14 +1,13 @@
 ﻿using AzureSearchToolkit.Attributes;
 using AzureSearchToolkit.Logging;
-using AzureSearchToolkit.Request;
 using AzureSearchToolkit.Utilities;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Rest.Azure;
+using Microsoft.Rest.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AzureSearchToolkit
@@ -16,6 +15,7 @@ namespace AzureSearchToolkit
     public class AzureSearchConnection : IAzureSearchConnection, IDisposable
     {
         static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(10);
+        static readonly TimeSpan defaultMaxBackoff = TimeSpan.FromSeconds(4);
 
         /// <summary>
         /// Placeholder for index when no Type is used in constructor
@@ -35,10 +35,17 @@ namespace AzureSearchToolkit
         /// </summary>
         public TimeSpan Timeout { get; }
 
-        public AzureSearchConnection(string searchName, string searchKey, TimeSpan? timeout = null)
-            : this(searchName, searchKey, string.Empty, timeout) { }
+		/// <inheritdoc cref="AzureSearchConnection(string, string, string, TimeSpan?, int, TimeSpan?)"/>
+		public AzureSearchConnection(string searchName, string searchKey, 
+            TimeSpan? timeout = null, int retryCount = 3, TimeSpan? maxBackoff = null)
+            : this(searchName, searchKey, string.Empty, timeout, retryCount, maxBackoff) { }
 
-        public AzureSearchConnection(string searchName, string searchKey, string index, TimeSpan? timeout = null)
+		/// <summary>
+		/// Tworzy <see cref="SearchServiceClient"/> wraz z <see cref="RetryPolicy"/>.
+		/// Wyjaśnienie znaczenia parametrów <see cref="RetryPolicy"/>: https://stackoverflow.com/a/18500757.
+		/// </summary>
+		public AzureSearchConnection(string searchName, string searchKey, string index, 
+            TimeSpan? timeout = null, int retryCount = 3, TimeSpan? maxBackoff = null)
         {
             if (timeout.HasValue)
             {
@@ -51,14 +58,30 @@ namespace AzureSearchToolkit
             IndexPlaceholder = index;
             indexes = new Dictionary<Type, string>();
 
-            SearchClient = new Lazy<SearchServiceClient>(() => new SearchServiceClient(searchName, new SearchCredentials(searchKey)));
-            Timeout = timeout ?? defaultTimeout;
+			SearchClient = new Lazy<SearchServiceClient>(() => 
+                GetSearchServiceClientWithRetryPolicy(searchName, searchKey, retryCount, maxBackoff ?? defaultMaxBackoff)
+            );
+
+			// Nie widzę wykorzystania tego pola.
+			Timeout = timeout ?? defaultTimeout;
         }
 
-        public AzureSearchConnection(string searchName, string searchKey, string index, Type indexType, TimeSpan? timeout = null)
-            : this(searchName, searchKey, new Dictionary<Type, string>() { { indexType, index } }, timeout) { }
+        /// <inheritdoc cref="AzureSearchConnection(string, string, Dictionary{Type, string}, TimeSpan?, int, TimeSpan?)"/>
+        public AzureSearchConnection(string searchName, string searchKey, string index, Type indexType, 
+            TimeSpan? timeout = null, int retryCount = 3, TimeSpan? maxBackoff = null)
+            : this(searchName, 
+                  searchKey, 
+                  new Dictionary<Type, string>() { { indexType, index } }, 
+                  timeout, 
+                  retryCount, 
+                  maxBackoff) { }
 
-        public AzureSearchConnection(string searchName, string searchKey, Dictionary<Type, string> indexesWithType, TimeSpan? timeout = null)
+		/// <summary>
+        /// Tworzy <see cref="SearchServiceClient"/> wraz z <see cref="RetryPolicy"/>.
+		/// Wyjaśnienie znaczenia parametrów <see cref="RetryPolicy"/>: https://stackoverflow.com/a/18500757.
+		/// </summary>
+		public AzureSearchConnection(string searchName, string searchKey, Dictionary<Type, string> indexesWithType, 
+            TimeSpan? timeout = null, int retryCount = 3, TimeSpan? maxBackoff = null)
         {
             if (timeout.HasValue)
             {
@@ -87,7 +110,11 @@ namespace AzureSearchToolkit
 
             indexes = indexesWithType;
 
-            SearchClient = new Lazy<SearchServiceClient>(() => new SearchServiceClient(searchName, new SearchCredentials(searchKey)));
+            SearchClient = new Lazy<SearchServiceClient>(() => 
+                GetSearchServiceClientWithRetryPolicy(searchName, searchKey, retryCount, maxBackoff ?? defaultMaxBackoff)
+            );
+
+            // Nie widzę wykorzystania tego pola.
             Timeout = timeout ?? defaultTimeout;
         }
 
@@ -300,6 +327,21 @@ namespace AzureSearchToolkit
         {
             return GetIndex(typeof(T));
         }
+
+        private SearchServiceClient GetSearchServiceClientWithRetryPolicy(string searchName, string searchKey, int retryCount, TimeSpan maxBackoff)
+		{
+            var client = new SearchServiceClient(searchName, new SearchCredentials(searchKey));
+
+            // https://stackoverflow.com/a/18500757
+            client.SetRetryPolicy(new RetryPolicy(new HttpStatusCodeErrorDetectionStrategy(),
+                retryCount: retryCount,
+                minBackoff: TimeSpan.FromSeconds(1),
+                maxBackoff: maxBackoff,
+                deltaBackoff: TimeSpan.FromSeconds(1)));
+
+            return client;
+        }
+
 
         private string GetIndex(Type type)
         {
