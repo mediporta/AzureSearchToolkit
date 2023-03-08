@@ -31,8 +31,7 @@ namespace AzureSearchToolkit
             : this(searchName, searchKey, string.Empty, retryPolicy) { }
 
 		/// <summary>
-		/// Tworzy <see cref="SearchServiceClient"/> wraz z <see cref="RetryPolicy"/>.
-		/// Wyjaśnienie znaczenia parametrów <see cref="RetryPolicy"/>: https://stackoverflow.com/a/18500757.
+		/// Initiates <see cref="SearchServiceClient"/> with <see cref="RetryPolicy"/>.
 		/// </summary>
 		public AzureSearchConnection(string searchName, string searchKey, string index, RetryPolicy retryPolicy = null)
         {
@@ -53,8 +52,7 @@ namespace AzureSearchToolkit
 				  retryPolicy) { }
 
 		/// <summary>
-        /// Tworzy <see cref="SearchServiceClient"/> wraz z <see cref="RetryPolicy"/>.
-		/// Wyjaśnienie znaczenia parametrów <see cref="RetryPolicy"/>: https://stackoverflow.com/a/18500757.
+		/// Initiates <see cref="SearchServiceClient"/> with <see cref="RetryPolicy"/>.
 		/// </summary>
 		public AzureSearchConnection(string searchName, string searchKey, Dictionary<Type, string> indexesWithType, RetryPolicy retryPolicy = null)
         {
