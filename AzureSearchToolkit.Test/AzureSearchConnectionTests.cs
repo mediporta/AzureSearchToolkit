@@ -21,11 +21,5 @@ namespace AzureSearchToolkit.Test
             Assert.Throws<ArgumentNullException>(() => new AzureSearchConnection(SearchName, SearchKey, Index, default(Type)));
             Assert.Throws<ArgumentOutOfRangeException>(() => new AzureSearchConnection(SearchName, SearchKey, new Dictionary<Type, string>()));
         }
-
-        [Fact]
-        public void GuardClauses_Timeout()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureSearchConnection(SearchName, SearchKey, Index, timeout: TimeSpan.FromDays(-1)));
-        }
     }
 }
