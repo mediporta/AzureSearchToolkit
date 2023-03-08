@@ -26,7 +26,7 @@ namespace AzureSearchToolkit
 
         internal Lazy<SearchServiceClient> SearchClient { get; private set; }
 
-		/// <inheritdoc cref="AzureSearchConnection(string, string, string, TimeSpan?, int, TimeSpan?)"/>
+		/// <inheritdoc cref="AzureSearchConnection(string, string, string, RetryPolicy)"/>
 		public AzureSearchConnection(string searchName, string searchKey, RetryPolicy retryPolicy = null)
             : this(searchName, searchKey, string.Empty, retryPolicy) { }
 
@@ -44,7 +44,7 @@ namespace AzureSearchToolkit
 			SearchClient = new Lazy<SearchServiceClient>(() => GetSearchServiceClientWithRetryPolicy(searchName, searchKey, retryPolicy));
 		}
 
-		/// <inheritdoc cref="AzureSearchConnection(string, string, Dictionary{Type, string}, TimeSpan?, int, TimeSpan?)"/>
+		/// <inheritdoc cref="AzureSearchConnection(string, string, Dictionary{Type, string}, RetryPolicy)"/>
 		public AzureSearchConnection(string searchName, string searchKey, string index, Type indexType, RetryPolicy retryPolicy = null)
             : this(searchName, 
                   searchKey, 
