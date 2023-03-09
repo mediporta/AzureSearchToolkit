@@ -1,22 +1,19 @@
 ﻿using AzureSearchToolkit.Attributes;
 using AzureSearchToolkit.Logging;
-using AzureSearchToolkit.Request;
 using AzureSearchToolkit.Utilities;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Rest.Azure;
+using Microsoft.Rest.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AzureSearchToolkit
 {
     public class AzureSearchConnection : IAzureSearchConnection, IDisposable
     {
-        static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(10);
-
         /// <summary>
         /// Placeholder for index when no Type is used in constructor
         /// </summary>
@@ -29,42 +26,36 @@ namespace AzureSearchToolkit
 
         internal Lazy<SearchServiceClient> SearchClient { get; private set; }
 
-        /// <summary>
-        /// How long to wait for a response to a network request before
-        /// giving up.
-        /// </summary>
-        public TimeSpan Timeout { get; }
+		/// <inheritdoc cref="AzureSearchConnection(string, string, string, RetryPolicy)"/>
+		public AzureSearchConnection(string searchName, string searchKey, RetryPolicy retryPolicy = null)
+            : this(searchName, searchKey, string.Empty, retryPolicy) { }
 
-        public AzureSearchConnection(string searchName, string searchKey, TimeSpan? timeout = null)
-            : this(searchName, searchKey, string.Empty, timeout) { }
-
-        public AzureSearchConnection(string searchName, string searchKey, string index, TimeSpan? timeout = null)
+		/// <summary>
+		/// Initiates <see cref="SearchServiceClient"/> with <see cref="RetryPolicy"/>.
+		/// </summary>
+		public AzureSearchConnection(string searchName, string searchKey, string index, RetryPolicy retryPolicy = null)
         {
-            if (timeout.HasValue)
-            {
-                Argument.EnsurePositive(nameof(timeout), timeout.Value);
-            }
-
             Argument.EnsureNotBlank(nameof(searchName), searchName);
             Argument.EnsureNotBlank(nameof(searchKey), searchKey);
 
             IndexPlaceholder = index;
             indexes = new Dictionary<Type, string>();
 
-            SearchClient = new Lazy<SearchServiceClient>(() => new SearchServiceClient(searchName, new SearchCredentials(searchKey)));
-            Timeout = timeout ?? defaultTimeout;
-        }
+			SearchClient = new Lazy<SearchServiceClient>(() => GetSearchServiceClientWithRetryPolicy(searchName, searchKey, retryPolicy));
+		}
 
-        public AzureSearchConnection(string searchName, string searchKey, string index, Type indexType, TimeSpan? timeout = null)
-            : this(searchName, searchKey, new Dictionary<Type, string>() { { indexType, index } }, timeout) { }
+		/// <inheritdoc cref="AzureSearchConnection(string, string, Dictionary{Type, string}, RetryPolicy)"/>
+		public AzureSearchConnection(string searchName, string searchKey, string index, Type indexType, RetryPolicy retryPolicy = null)
+            : this(searchName, 
+                  searchKey, 
+                  new Dictionary<Type, string>() { { indexType, index } },
+				  retryPolicy) { }
 
-        public AzureSearchConnection(string searchName, string searchKey, Dictionary<Type, string> indexesWithType, TimeSpan? timeout = null)
+		/// <summary>
+		/// Initiates <see cref="SearchServiceClient"/> with <see cref="RetryPolicy"/>.
+		/// </summary>
+		public AzureSearchConnection(string searchName, string searchKey, Dictionary<Type, string> indexesWithType, RetryPolicy retryPolicy = null)
         {
-            if (timeout.HasValue)
-            {
-                Argument.EnsurePositive(nameof(timeout), timeout.Value);
-            }
-
             Argument.EnsureNotEmpty(nameof(indexesWithType), indexesWithType);
             Argument.EnsureNotBlank(nameof(searchName), searchName);
             Argument.EnsureNotBlank(nameof(searchKey), searchKey);
@@ -87,8 +78,7 @@ namespace AzureSearchToolkit
 
             indexes = indexesWithType;
 
-            SearchClient = new Lazy<SearchServiceClient>(() => new SearchServiceClient(searchName, new SearchCredentials(searchKey)));
-            Timeout = timeout ?? defaultTimeout;
+            SearchClient = new Lazy<SearchServiceClient>(() => GetSearchServiceClientWithRetryPolicy(searchName, searchKey, retryPolicy));
         }
 
         /// <inheritdoc/>
@@ -300,6 +290,17 @@ namespace AzureSearchToolkit
         {
             return GetIndex(typeof(T));
         }
+
+        private SearchServiceClient GetSearchServiceClientWithRetryPolicy(string searchName, string searchKey, RetryPolicy retryPolicy)
+		{
+            var client = new SearchServiceClient(searchName, new SearchCredentials(searchKey));
+
+            if (retryPolicy != null)
+                client.SetRetryPolicy(retryPolicy);            
+
+            return client;
+        }
+
 
         private string GetIndex(Type type)
         {

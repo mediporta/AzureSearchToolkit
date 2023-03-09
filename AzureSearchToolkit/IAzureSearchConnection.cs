@@ -12,12 +12,6 @@ namespace AzureSearchToolkit
     public interface IAzureSearchConnection
     {
         /// <summary>
-        /// How long to wait for a response to a network request before
-        /// giving up.
-        /// </summary>
-        TimeSpan Timeout { get; }
-
-        /// <summary>
         /// Create index if it does not exists
         /// </summary>
         /// <param name="index">Optionally override default index</param>
