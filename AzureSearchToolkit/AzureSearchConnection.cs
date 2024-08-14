@@ -165,6 +165,33 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
+        public async Task<bool> DeleteIndexAsync<T>(ILogger logger = null) where T : class
+        {
+            var index = GetIndex<T>();
+
+            if (logger == null)
+            {
+                logger = NullLogger.Instance;
+            }
+
+            try
+            {
+                // There is no need to check if index exists while deleting.
+                await SearchClient.Value.Indexes.DeleteAsync(index);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                var message = $"Error on deleting {index}!";
+
+                logger.Log(TraceEventType.Error, e, null, message);
+
+                return false;
+            }
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> EnsureSearchIndexAsync<T>(ILogger logger = null) where T : class
         {
             var index = GetIndex<T>();

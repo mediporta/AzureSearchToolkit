@@ -27,6 +27,11 @@ namespace AzureSearchToolkit
         Task<bool> ChangeDocumentsInIndexAsync<T>(SortedDictionary<T, IndexActionType> changedDocuments, ILogger logger = null) where T : class;
 
         /// <summary>
+        /// Deletes index if exists.
+        /// </summary>
+        Task<bool> DeleteIndexAsync<T>(ILogger logger = null) where T : class;
+
+        /// <summary>
         /// Issues search requests to AzureSearch.
         /// </summary>
         /// <param name="searchParameters">Search parameters for the request.</param>

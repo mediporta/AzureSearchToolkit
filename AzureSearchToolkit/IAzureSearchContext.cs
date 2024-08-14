@@ -77,6 +77,11 @@ namespace AzureSearchToolkit
         Task<bool> UpdateAsync<T>(IEnumerable<T> documents) where T : class;
 
         /// <summary>
+        /// Deletes index if exists.
+        /// </summary>
+        Task<bool> DeleteIndexAsync<T>() where T : class;
+
+        /// <summary>
         /// Gets a query that can search for documents of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The document type.</typeparam>

@@ -115,6 +115,12 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
+        public async Task<bool> DeleteIndexAsync<T>() where T : class
+        {
+            return await Connection.DeleteIndexAsync<T>();
+        }
+
+        /// <inheritdoc/>
         public IQueryable<T> Query<T>() where T : class
         {
             return new AzureSearchQuery<T>(new AzureSearchQueryProvider(Connection, Mapping, typeof(T), Logger));
