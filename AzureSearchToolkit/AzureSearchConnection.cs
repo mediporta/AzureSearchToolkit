@@ -111,8 +111,6 @@ namespace AzureSearchToolkit
                 logger = NullLogger.Instance;
             }
 
-            await EnsureSearchIndexAsync<T>(logger);
-
             var index = GetIndex<T>();
             var indexActions = new List<IndexAction<T>>();
 
@@ -192,7 +190,9 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
-        public async Task<bool> EnsureSearchIndexAsync<T>(ILogger logger = null) where T : class
+        public async Task<bool> EnsureSearchIndexAsync<T>(
+            IndexScoringProfiles scoringProfiles = null,
+            ILogger logger = null) where T : class
         {
             var index = GetIndex<T>();
 
@@ -224,7 +224,9 @@ namespace AzureSearchToolkit
             var definition = new Index()
             {
                 Name = index,
-                Fields = FieldBuilder.BuildForType<T>()
+                Fields = FieldBuilder.BuildForType<T>(),
+                ScoringProfiles = scoringProfiles?.Profiles,
+                DefaultScoringProfile = scoringProfiles?.DefaultProfile,
             };
 
             try

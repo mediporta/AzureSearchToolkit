@@ -1,10 +1,8 @@
 ﻿using AzureSearchToolkit.Logging;
-using AzureSearchToolkit.Request;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Rest.Azure;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AzureSearchToolkit
@@ -12,11 +10,10 @@ namespace AzureSearchToolkit
     public interface IAzureSearchConnection
     {
         /// <summary>
-        /// Create index if it does not exists
+        /// Create index if it does not exists applying scoring profiles
         /// </summary>
-        /// <param name="index">Optionally override default index</param>
         /// <returns>If the index was created, true is returned, otherwise false</returns>
-        Task<bool> EnsureSearchIndexAsync<T>(ILogger logger = null) where T : class;
+        Task<bool> EnsureSearchIndexAsync<T>(IndexScoringProfiles scoringProfiles = null, ILogger logger = null) where T : class;
 
         /// <summary>
         /// Change documents in index
