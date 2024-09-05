@@ -2,10 +2,8 @@
 using AzureSearchToolkit.Mapping;
 using AzureSearchToolkit.Utilities;
 using Microsoft.Azure.Search.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AzureSearchToolkit
@@ -118,6 +116,12 @@ namespace AzureSearchToolkit
         public async Task<bool> DeleteIndexAsync<T>() where T : class
         {
             return await Connection.DeleteIndexAsync<T>();
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> EnsureSearchIndexAsync<T>(IndexScoringProfiles scoringProfiles) where T : class
+        {
+            return await Connection.EnsureSearchIndexAsync<T>(scoringProfiles);
         }
 
         /// <inheritdoc/>

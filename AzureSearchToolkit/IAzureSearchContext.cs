@@ -1,8 +1,6 @@
 ﻿using Microsoft.Azure.Search.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AzureSearchToolkit
@@ -80,6 +78,12 @@ namespace AzureSearchToolkit
         /// Deletes index if exists.
         /// </summary>
         Task<bool> DeleteIndexAsync<T>() where T : class;
+
+        /// <summary>
+        /// Create index if it does not exists applying scoring profiles
+        /// </summary>
+        /// <returns>If the index was created, true is returned, otherwise false</returns>
+        Task<bool> EnsureSearchIndexAsync<T>(IndexScoringProfiles scoringProfiles) where T : class;
 
         /// <summary>
         /// Gets a query that can search for documents of type <typeparamref name="T"/>.
