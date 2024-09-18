@@ -80,10 +80,15 @@ namespace AzureSearchToolkit
         Task<bool> DeleteIndexAsync<T>() where T : class;
 
         /// <summary>
-        /// Create index if it does not exists applying scoring profiles
+        /// Create index if it does not exists applying scoring profiles.
         /// </summary>
         /// <returns>If the index was created, true is returned, otherwise false</returns>
         Task<bool> EnsureSearchIndexAsync<T>(IndexScoringProfiles scoringProfiles) where T : class;
+
+        /// <summary>
+        /// Returns index statitics: documents count and storage size.
+        /// </summary>
+        Task<IndexGetStatisticsResult> GetIndexStatisticsAsync<T>() where T : class;
 
         /// <summary>
         /// Gets a query that can search for documents of type <typeparamref name="T"/>.

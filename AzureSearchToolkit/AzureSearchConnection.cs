@@ -101,6 +101,63 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
+        public async Task<bool> EnsureSearchIndexAsync<T>(
+            IndexScoringProfiles scoringProfiles = null,
+            ILogger logger = null) where T : class
+        {
+            var index = GetIndex<T>();
+
+            if (logger == null)
+            {
+                logger = NullLogger.Instance;
+            }
+
+            var indexExists = false;
+
+            try
+            {
+                indexExists = await SearchClient.Value.Indexes.ExistsAsync(index);
+            }
+            catch (Exception e)
+            {
+                var message = $"Error on checking if {index} exists!";
+
+                logger.Log(TraceEventType.Error, e, null, message);
+
+                return false;
+            }
+
+            if (indexExists)
+            {
+                return true;
+            }
+
+            var definition = new Index()
+            {
+                Name = index,
+                Fields = FieldBuilder.BuildForType<T>(),
+                ScoringProfiles = scoringProfiles?.Profiles,
+                DefaultScoringProfile = scoringProfiles?.DefaultProfile,
+            };
+
+            try
+            {
+                var result = await SearchClient.Value.Indexes.CreateAsync(definition);
+
+                if (result != null)
+                {
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Log(TraceEventType.Error, e, null, $"Index {index} was not created!", null);
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> ChangeDocumentsInIndexAsync<T>(SortedDictionary<T, IndexActionType> changedDocuments, ILogger logger = null)
             where T : class
         {
@@ -190,8 +247,7 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
-        public async Task<bool> EnsureSearchIndexAsync<T>(
-            IndexScoringProfiles scoringProfiles = null,
+        public async Task<IndexGetStatisticsResult> GetIndexStatisticsAsync<T>(
             ILogger logger = null) where T : class
         {
             var index = GetIndex<T>();
@@ -201,49 +257,18 @@ namespace AzureSearchToolkit
                 logger = NullLogger.Instance;
             }
 
-            var indexExists = false;
-
             try
             {
-                indexExists = await SearchClient.Value.Indexes.ExistsAsync(index);
+                return await SearchClient.Value.Indexes.GetStatisticsAsync(index);
             }
             catch (Exception e)
             {
-                var message = $"Error on checking if {index} exists!";
+                var message = $"Error on getting {index} statistics!";
 
                 logger.Log(TraceEventType.Error, e, null, message);
 
-                return false;
+                return null;
             }
-
-            if (indexExists)
-            {
-                return false;
-            }
-
-            var definition = new Index()
-            {
-                Name = index,
-                Fields = FieldBuilder.BuildForType<T>(),
-                ScoringProfiles = scoringProfiles?.Profiles,
-                DefaultScoringProfile = scoringProfiles?.DefaultProfile,
-            };
-
-            try
-            {
-                var result = await SearchClient.Value.Indexes.CreateAsync(definition);
-
-                if (result != null)
-                {
-                    return true;
-                }
-            }
-            catch (Exception e)
-            {
-                logger.Log(TraceEventType.Error, e, null, $"Index {index} was not created!", null);
-            }
-
-            return false;
         }
 
         /// <inheritdoc/>
@@ -325,7 +350,7 @@ namespace AzureSearchToolkit
             var client = new SearchServiceClient(searchName, new SearchCredentials(searchKey));
 
             if (retryPolicy != null)
-                client.SetRetryPolicy(retryPolicy);            
+                client.SetRetryPolicy(retryPolicy);
 
             return client;
         }
