@@ -19,7 +19,9 @@ namespace AzureSearchToolkit.Request
             {
                 QueryType = QueryType.Simple,
                 SearchMode = SearchMode.All,
-                Top = 200
+                // https://learn.microsoft.com/en-us/azure/search/search-pagination-page-layout
+                // "The upper limit is 1,000 documents returned per page of search results."
+                Top = 1000,
             };
             SearchText = "*";
         }

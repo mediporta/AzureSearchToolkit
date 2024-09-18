@@ -29,6 +29,11 @@ namespace AzureSearchToolkit
         Task<bool> DeleteIndexAsync<T>(ILogger logger = null) where T : class;
 
         /// <summary>
+        /// Returns index statitics: documents count and storage size.
+        /// </summary>
+        Task<IndexGetStatisticsResult> GetIndexStatisticsAsync<T>(ILogger logger = null) where T : class;
+
+        /// <summary>
         /// Issues search requests to AzureSearch.
         /// </summary>
         /// <param name="searchParameters">Search parameters for the request.</param>

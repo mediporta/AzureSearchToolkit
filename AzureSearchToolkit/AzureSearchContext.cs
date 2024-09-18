@@ -125,6 +125,12 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
+        public async Task<IndexGetStatisticsResult> GetIndexStatisticsAsync<T>() where T : class
+        {
+            return await Connection.GetIndexStatisticsAsync<T>();
+        }
+
+        /// <inheritdoc/>
         public IQueryable<T> Query<T>() where T : class
         {
             return new AzureSearchQuery<T>(new AzureSearchQueryProvider(Connection, Mapping, typeof(T), Logger));
