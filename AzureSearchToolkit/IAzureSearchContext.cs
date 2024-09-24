@@ -91,6 +91,11 @@ namespace AzureSearchToolkit
         Task<IndexGetStatisticsResult> GetIndexStatisticsAsync<T>() where T : class;
 
         /// <summary>
+        /// Returns all index names within the resource.
+        /// </summary>
+        Task<IList<string>> ListIndexesAsync();
+
+        /// <summary>
         /// Gets a query that can search for documents of type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The document type.</typeparam>

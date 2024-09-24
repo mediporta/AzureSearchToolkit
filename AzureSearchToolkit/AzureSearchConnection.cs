@@ -101,6 +101,12 @@ namespace AzureSearchToolkit
         }
 
         /// <inheritdoc/>
+        public async Task<IList<string>> ListIndexesAsync()
+        {
+            return await SearchClient.Value.Indexes.ListNamesAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> EnsureSearchIndexAsync<T>(
             IndexScoringProfiles scoringProfiles = null,
             ILogger logger = null) where T : class

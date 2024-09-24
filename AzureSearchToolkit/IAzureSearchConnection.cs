@@ -10,6 +10,11 @@ namespace AzureSearchToolkit
     public interface IAzureSearchConnection
     {
         /// <summary>
+        /// Returns all index names within the resource.
+        /// </summary>
+        Task<IList<string>> ListIndexesAsync();
+
+        /// <summary>
         /// Create index if it does not exists applying scoring profiles
         /// </summary>
         /// <returns>If the index was created, true is returned, otherwise false</returns>
