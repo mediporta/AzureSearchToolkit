@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace AzureSearchToolkit.Mapping
 {
@@ -27,6 +26,8 @@ namespace AzureSearchToolkit.Mapping
             Formatting = Formatting.None
         };
         private static JsonSerializer jsonSerializer = JsonSerializer.Create(jsonSettings);
+
+        private static readonly object locker = new object();
 
         public JToken FormatValue(MemberInfo member, object value)
         {
@@ -98,21 +99,29 @@ namespace AzureSearchToolkit.Mapping
         {
             if (!mappedPropertiesCache.ContainsKey(sourceType))
             {
-                mappedPropertiesCache.Add(sourceType, new Dictionary<string, string>());
-
-                var camelCasePropertyAttribute = sourceType.GetCustomAttribute<SerializePropertyNamesAsCamelCaseAttribute>(inherit: true);
-
-                foreach (var property in sourceType.GetProperties())
+                lock (locker)
                 {
-                    if (camelCasePropertyAttribute != null)
+                    if (!mappedPropertiesCache.ContainsKey(sourceType))
                     {
-                        var camelCasePropertyName = MappingHelper.ToCamelCase(property.Name);
+                        var mappedProperties = new Dictionary<string, string>();
 
-                        mappedPropertiesCache[sourceType].Add(camelCasePropertyName, property.Name);
-                    }
-                    else
-                    {
-                        mappedPropertiesCache[sourceType].Add(property.Name, property.Name);
+                        var camelCasePropertyAttribute = sourceType.GetCustomAttribute<SerializePropertyNamesAsCamelCaseAttribute>(inherit: true);
+
+                        foreach (var property in sourceType.GetProperties())
+                        {
+                            if (camelCasePropertyAttribute != null)
+                            {
+                                var camelCasePropertyName = MappingHelper.ToCamelCase(property.Name);
+
+                                mappedProperties.Add(camelCasePropertyName, property.Name);
+                            }
+                            else
+                            {
+                                mappedProperties.Add(property.Name, property.Name);
+                            }
+                        }
+
+                        mappedPropertiesCache.Add(sourceType, mappedProperties);
                     }
                 }
             }
